@@ -1,41 +1,51 @@
 \documentclass{jarticle}
-\usepackage{amsmath}
+\usepackage{amsmath, url}
 \title{私のための統計学入門}
 \author{阿部 興\footnote{「あべ こう」と読む}}
 \西暦
 \begin{document}
 \maketitle
+
+\newcommand{\KL}{D_{\mathrm KL}}
+
 \section{確率の話}
 ここでは主に大数の法則, 中心極限定理, カルバック・ライブラ情報量について勉強する.
 
+\subsection{大数の法則}
+
+いろいろな本に書いてあるので省略する.
+
+\subsection{中心極限定理}
+
+中心極限定理の証明には, 特性関数やモーメント母関数を使うことが多い. 
+
+テイラー展開を使ったより簡単な証明が, 黒木 (2017)\cite{Kuroki2017} にある. 
+
 \subsection{カルバック・ライブラ情報量}
-状態 $i=1,\ldots,M$ がそれぞれ $q_i$ の確率で生起する分布と, 状態 $i=1,\ldots,M$ がそれぞれ $tex:p_i$ の確率で生起する分布を考える. 
+統計的推測のために重要な役割を果たす量の1つにカルバック・ライブラ情報量がある.
+カルバック・ライブラ情報量$\KL(p\|q)$は離散型の確率関数$p(x)$と$q(x)$に対しては, 
+\begin{align}
+\KL(p\|q) = -\sum_{x} p(x) \log \frac{q(x)}{p(x)}
+\end{align}
+連続型の確率密度関数$p(x)$と$q(x)$に対しては, 
+\begin{align}
+\KL(p\|q) = -\int p(x) \log \frac{q(x)}{p(x)} \, dx
+\end{align}
+と定義される. 
+赤池（1980）\cite{Akaike1980} に習って, カルバック・ライブラ情報量の直感的な意味を考える. 結論を先取りすると, カルバック・ライブラ情報量は「サンプルを生成した分布が $q(x)$ のとき, 経験分布がほぼ $p(x)$ となる確率の対数のサンプルサイズ分の 1 の符号反転」と解釈できる. このカギカッコの中身の意味がわかるようになることがこの節の目標である.
 
-この2つの分布間のカルバック・ライブラ情報量は、
-
-$$
-\sum_{i=1}^{M} p_i \log {\frac {p_i}{q_i}}
-$$
-
-と定義されます。
-
-この量は「母集団分布が $tex:q_i$ のとき経験分布がほぼ $p_i$ となる確率の対数のサンプルサイズ分の 1 の符号反転」と解釈できる. 
-この一文の意味がわかるようになることがこの節の目標である.
-さて、状態 $tex: i=1,\ldots,M$ がそれぞれ $q_i$ の確率で生起する分布を考える.
-
-この分布からのサンプルをN個観測して、状態 $i=1,\ldots,M$が生起した回数をそれぞれ $N_1,\ldots,N_M$ とします。
-$ N=\sum_{i=1}^{M}N_i$ です。
-$N_1,\ldots,N_M$ のような観測が得られる確率は
-$$
+状態 $i=1,\ldots,M$ がそれぞれ $q_i$ の確率で生起する分布と, 状態 $i=1,\ldots,M$ がそれぞれ $p_i$ の確率で生起する分布を考える. この分布からのサンプルを $N$ 個観測して、状態 $i=1,\ldots,M$ が生起した回数をそれぞれ $N_1,\ldots,N_M$ とする. $ N=\sum_{i=1}^{M}N_i$ である. 
+$N_1,\ldots,N_M$ のような観測が得られる確率は,
+\begin{align}
 W=\frac{N!}{N_1! \cdots N_M!}q^{N_1}_1 \cdots q^{N_M}_M
-$$
-です。（要は多項分布です。）
+\end{align}
+と表せる. （このような分布は多項分布と呼ばれる.）
 
 ここでスターリングの公式
-$$
+\begin{align}
 \log N! \approx N\log N -N
-$$
-を使って $tex: \log W$ を近似すると
+\end{align}
+を使って $\log W$ を近似すると
 \begin{align}
 \log W &\approx (N \log N) - \sum_{i=1}^{M}( N_i \log N_i -N_i) + \sum_i=1^{M} \log q_i \\
 &= N \log N - \sum_{i=1}^M N_i (\log N_i - q_i) \\
@@ -43,22 +53,25 @@ $$
 &= - \sum_{i=1}^M N_i (\log \frac{N_i}{N} - q_i) \\
 &= - N \sum_{i=1}^M \frac{N_i}{N} (\log \frac{N_i}{N} - q_i) 
 \end{align}
-と整理できる。
+と整理できる.
 $p_i = N_i/N$ とおくと
-$$
+\begin{align}
 \log W \approx -N\sum_{i=1}^{M}p_i \log\frac{p_i}{q_i}
-$$
+\end{align}
 という結果を得る.
 
-あらためて考えると $tex: p_i = N_i/N$  は経験的に推定された確率と解釈できます。
-$tex:q_i$ は真の確率であったことを思い出すと、$W$ は真の分布が $q_i$ のときに $p_i$ のように振る舞う確率と解釈できます。
-$\log W]$を N で割って、符号を反転させると、$\sum_{i=1}^{M} p_i \log {\frac {p_i}{q_i}}$ となります。
-この量は「母集団分布が $q_i$ のとき経験分布がほぼ $p_i$ となる確率の対数のサンプルサイズ分の 1 の符号反転」と解釈できます。
+あらためて考えると $p_i = N_i/N$  は経験的に推定された確率と解釈できる.
+$q_i$ は真の確率であったことを思い出すと、$W$ はサンプルを生成した真の分布が $q_i$ のときに $p_i$ のように振る舞う確率と解釈できる. 
+$\log W$を $N$ で割り, 符号を反転させると, $-\sum_{i=1}^{M} p_i \log {\frac {q_i}{p_i}}$ となる.
+この量は「母集団分布が $q_i$ のとき経験分布がほぼ $p_i$ となる確率の対数のサンプルサイズ分の 1 の符号反転」と解釈できる.
 
-以上の考察からカルバック・ライブラ情報量を次のように定義する.
+カルバック・ライブラ情報量は次の性質を満たすため, 分布の近さを測る指標となる. 
 \begin{align}
-D(p\|q)
+\KL(p\|q) \ge 0,
 \end{align}
+かつ, $\KL(p\|q) = 0$となるのは $p(x)=q(x)$のときに限られる.
+
+%\subsection{サノフの定理}
 
 \section{最尤法}
 本節では最尤法と呼ばれる方法の性質について述べる. これについて理解するために, フィッシャー情報量と呼ばれる量が重要になるため, 先にフィッシャー情報量についての性質を述べる. 
@@ -108,7 +121,7 @@ l_n(\theta) = \log \left( \frac{\prod_{i=1}^{n}p(x_i|\theta)}{\prod_{i=1}^{n}p(x
 \end{align}
 これをサンプルサイズ（標本の大きさ）で割ると大数の法則により, 
 \begin{align}
-\lim_{n\to \infty} l_n(\theta)/n &= \int_{-\infty}^{\infty} p(x|\theta_0)\log \left(\frac{p(x| \theta)}{ p(x_i| \theta)}\right) \, dx
+\lim_{n\to \infty} l_n(\theta)/n &= \int_{-\infty}^{\infty} p(x|\theta_0)\log \left(\frac{p(x| \theta)}{ p(x| \theta_0)}\right) \, dx
 \end{align}
 となる. 右辺はサンプルを生成した分布と, 統計モデルのカルバック・ライブラ情報量の$-1$倍となっている. そのため, サンプルを生成した分布と統計モデルのカルバック・ライブラ情報量を最小にするためには $l_n(\theta)$ を最大にすればよいことが予想される.
 $l_n(\theta)$ の式を少し変形する. 
@@ -163,6 +176,14 @@ l_n(\theta)&= -\frac{I(\theta_0)}{2}\left(\sqrt{n}(\theta - \theta_0 )- \frac{Z}
 
 より直感的に述べると, 最尤推定量 $\hat \theta$ はサンプルサイズが十分大きいとき, 平均 $\theta_0$, 分散 $I(\theta_0)^{-1}/\sqrt{n}$ の正規分布に従うということである. 
 
+\paragraph{最尤推定の手順.} 
+\begin{enumerate}
+\item データ$X$を生成した分布に対し, 同時確率（密度）関数$p(X|\theta)$を適当に与える. 
+\item $p(X|\theta)$ を $\theta$ の関数とみて, $p(X|\theta)$ を最大化する $\theta$ をなんらかの方法で探し, 推定量とする.
+\end{enumerate}
+
+\subsubsection{例題}
+まずは二項分布, ポアソン分布, 指数分布などで練習すると良い.
 
 \subsection{パラメータが複数の場合}
 
@@ -171,9 +192,60 @@ l_n(\theta)&= -\frac{I(\theta_0)}{2}\left(\sqrt{n}(\theta - \theta_0 )- \frac{Z}
 \subsection{間違ったモデルで最尤推定すること}
 上記ではサンプルを生成した分布と統計モデルが, パラメータのとり方によっては厳密に一致する場合を論じた. しかし, 現実にはサンプルを生成した分布は未知であり, 統計モデルは分析者が設定する. そのため, 統計モデルによって, サンプルを生成した分布が実現可能かどうかはわからない. 
 
+最尤推定は真の分布とモデルの間のカルバック・ライブラ情報量を経験的に最小化する方法であったことを思い出すと, 最尤法は「間違ったモデル」を選んでも, 選んだ範囲内で（カルバック・ライブラ情報量の意味で）適切な推定を行うことが予想される. 
+
+しかし, このことを一般的に保証するような定理は今のところないと思われる. 
+
+\subsubsection{例題}
+サンプルを生成した分布が確率密度関数
+\begin{align}
+g(x) = \frac{1}{6}x^3 exp(-x)
+\end{align}
+を持つとする. （この分布はガンマ分布と呼ばれる.）
+統計モデルを正規分布とする. 
+
+サンプルを生成した分布と統計モデルの間のカルバック・ライブラ情報量は, 
+ \begin{align}
+ E_g (-\log6+3\log X-X)-\frac{1}{2}E_g\{\log(2\pi \sigma^2)) + \frac{(X-\mu)^2}{\sigma^2}\}
+ \end{align}
+ である. ここで, $E_g[X] = \int xg(x)\, dx$.
+ 
+（途中計算は省略して）
+
+$\hat \mu=4$,$\hat \sigma^2=4$で, 真の分布とモデルの間のカルバック・ライブラ距離は最小となる. 
+R を使って最尤推定のシミュレーションをしてみる.
+\begin{verbatim}
+MLEnorm_sim <- function(i,n){
+  x <- rgamma(n,4,1)
+  muhat <- mean(x)
+  n <- length(x)
+  s2hat <-  n*var(x)/(n-1)
+  c(muhat,s2hat)
+}
+
+library(parallel)
+res10 <- t(simplify2array(mclapply(1:10000,MLEnorm_sim,n=10,
+ mc.cores = detectCores())))
+res100 <- t(simplify2array(mclapply(1:10000,MLEnorm_sim,n=100,
+ mc.cores = detectCores())))
+res1000 <- t(simplify2array(mclapply(1:10000,MLEnorm_sim,n=1000,
+ mc.cores = detectCores())))
+
+boxplot(cbind("n=10"=res10[,1],"n=100"=res100[,1],
+ "n=1000"=res1000[,1]),main=expression(hat(mu)))
+abline(h=4,lty=2)
+
+boxplot(cbind("n=10"=res10[,2],"n=100"=res100[,2],
+ "n=1000"=res1000[,2]),main=expression(hat(sigma^2)))
+abline(h=4,lty=2)
+\end{verbatim}
+
 \section{カイ2乗検定}
 
-
+\begin{thebibliography}{1}
+\bibitem{Kuroki2017}黒木玄. 2017-06-04 LindebergのTaylor展開のみを使った中心極限定理の証明.pdf\url{https://genkuroki.github.io/documents/mathtodon/}.
+\bibitem{Akaike1980} 赤池弘次. (1980). エントロピーとモデルの尤度 (< 講座> 物理学周辺の確率統計). 日本物理学会誌, 35(7), 608-614.
+\end{thebibliography}
 %$L_n（\theta）$を対数尤度関数と呼び, $L_n（\theta）$ を最大にするよう, パラメータ $\theta$ を選ぶ方法を最尤法と呼ぶ.
 %対数を取らずに, $ \prod_{i=1}^{n}p(x_i| \theta) \, dx $ を最大化する方法を最尤法として定義し, 対数を取るのは計算上のテクニックだとする解説も多い
 \end{document}
