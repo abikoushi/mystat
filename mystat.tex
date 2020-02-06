@@ -167,6 +167,7 @@ l_n(\theta_0 + h/\sqrt{n}) &\approx Z \sqrt{I(\theta_0)} h  - \frac{I(\theta_0) 
 という近似が成り立つ. $\theta=\theta_0 + h/\sqrt{n}$であったので,
 \begin{align}
 l_n(\theta)&= -\frac{I(\theta_0)}{2}\left(\sqrt{n}(\theta - \theta_0 )- \frac{Z}{\sqrt{I(\theta_0)}}\right)^2 + \frac{Z^2}{2}
+\label{reslik}
 \end{align}
 右辺は2次関数であり, $\sqrt{n}(\theta - \theta_0) = Z/\sqrt{I(\theta_0)}$ のとき最大になる.
 よって $l_n(\theta)$ を最大にするよう $\theta$ を決めると, $\sqrt{n}(\theta - \theta_0)$ は平均 0, 分散 $I(\theta_0)^{-1}$ の正規分布に従う.
@@ -240,7 +241,21 @@ boxplot(cbind("n=10"=res10[,2],"n=100"=res100[,2],
 abline(h=4,lty=2)
 \end{verbatim}
 
-\section{カイ2乗検定}
+\section{尤度比検定}
+
+$Z$ を標準正規分布に従う確率変数とすると $Z^2$ は自由度1のカイ二乗分布に従う. 
+自由度 $r$ のカイ二乗分布とは, 以下の確率密度関数を持つ分布である. 
+\begin{align}
+f(x) = \frac{1}{2^{r/2}\Gamma(r/2)}x^{r/2-1}\exp(-x/2).
+\end{align}
+
+また $Z_1, Z_2, \ldots, Z_r$ が独立でそれぞれ標準正規分布に従うとき, $Z_1^2+ Z_2^2+ \cdots Z_r^2$ は自由度 $r$ のカイ二乗分布に従う. 
+
+(\ref{reslik}) 式の結果を思い出すと, 対数尤度比関数 $l_n(\theta)$ が最大になるとき, その最大値の2倍は $Z^2$ であった. このことから, 対数尤度比を用いた検定にカイ二乗分布が使えそうなことがわかる. 
+
+\subsection{尤度比検定}
+
+
 
 \begin{thebibliography}{1}
 \bibitem{Kuroki2017}黒木玄. 2017-06-04 LindebergのTaylor展開のみを使った中心極限定理の証明.pdf\url{https://genkuroki.github.io/documents/mathtodon/}.
