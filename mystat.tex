@@ -1,7 +1,8 @@
 \documentclass[a4paper, 12pt]{jarticle}
+\usepackage[dvipdfmx]{graphicx}
 \usepackage{amsmath, amsthm, url}
 \title{私のための「頻度論」統計学入門}
-\author{阿部 興\footnote{「あべ こう」と読む}}
+\author{}
 \西暦
 \begin{document}
 \maketitle
@@ -528,9 +529,96 @@ $100(1-\alpha)$\% ワルド信頼区間を次のように定義する.
 
 \subsection{幾何分布回帰}
 
+あるとき, とあるウェブページのアクセス記録のデータを受け取ったとしよう. 
+その一部を抜粋したものが, 表 \ref{tabPageDepth} である.
+
+\begin{table}[ht]
+\centering
+\caption{pageDepth データ}
+\label{tabPageDepth}
+\begin{tabular}{rlllr}
+  \hline
+ pageDepth & userGender & userAgeBracket & userType & sessions \\ 
+  \hline
+ 1 & female & 18-24 & New Visitor & 2996 \\ 
+ 1 & female & 18-24 & Returning Visitor & 382 \\ 
+ 1 & female & 25-34 & New Visitor & 3426 \\ 
+ 1 & female & 25-34 & Returning Visitor & 474 \\ 
+ 1 & female & 35-44 & New Visitor & 1850 \\ 
+ 1 & female & 35-44 & Returning Visitor & 218 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+各列の意味を聞いてみると, pageDepth はそのウェブページから離脱するまでに閲覧したページの数, userGender は性別, userAgeBracket は年齢層, userType は新規訪問者かリピーターかを表し, sessions は訪問ののべ人数だという.
+
+このデータからウェブページをたくさん閲覧しやすい（回遊しやすい）のはどのユーザー層か知りたいとする. 
+
+pageDepth を目的変数として回帰を行えば, このデータセットをうまく要約できそうな気がする. 
+
 研究室の後輩に「回帰ってなにがあるんですか？　ポアソン回帰とかロジスティック回帰とか、あとは」と聞かれたことがある. 
 その答えはもちろん「いくらでもある」である\footnote{おそらく, このように質問させた事自体が, 私のそれまでの指導がまずかったことを意味している.}. そのモデルが良いかどうかは別の問題として, 好きな分布を使って自由に回帰をしてよい. 
+
+このようなデータに対してはどんな分布を用いるのが適切だろうか.
+
+現象を思い切り単純化して考え, コインの表が出たらページを離脱し, コインの裏が出たらページを離脱するとする. このとき, 表が出る確率を $p$ とすると, はじめて表が出るまでのコイントスの回数 $y$ の分布は, 
+\begin{align}
+f(y|p) = (1-p)^{y-1} p
+\end{align}
+で表せる. 
+このような分布を幾何分布と呼ぶ. 
 幸か不幸か, R の glm には幾何分布を使った回帰が実装されていないようなので, ここでは手作りで幾何分布回帰を行う. 
+
+本解析の場合 $y$ は pageDepth に対応する. 
+$p$ は0から1の範囲の値を取るパラメータなので, ロジスティック回帰のときと同様, 逆ロジット変換を利用して, 
+\begin{align}
+p_n = \frac{1}{1+\exp(-X_n \beta)}
+\end{align}
+という形で, 回帰構造を持たせることにする.
+
+関数の最小値,または最大値を求めることを最適化という. 
+R には optim という最適化用の関数があり, これに対数尤度関数を与えれば, 簡単に最尤法を実行することができる\footnote{ただし, 最適化はいつもうまくいくとは限らない. 関数に極値がいくつもあるような場合, 最適化はたやすく失敗する}. 
+
+R では, 対数尤度関数は次のように書けばよい. 
+
+\begin{verbatim}
+  ll <- function(beta,y,X,w){
+    logprob <- plogis(X %*% beta,log.p = TRUE)
+    logprob2 <- plogis(-X %*% beta,log.p = TRUE)
+    -sum(w*((y-1)*logprob2+logprob))
+  }
+\end{verbatim}
+
+R の optim はデフォルトでは最小値を求めるため, 対数尤度に $-1$ を書けた値を返すように, 関数を定義した. 
+
+optim は次のように使う.
+\begin{verbatim}
+  optim(ini, fn = ll,
+        method = "BFGS",
+        y=y,X=X,w=w, hessian = TRUE)
+\end{verbatim}
+ここで \verb|ini| はパラメータの初期値である. \verb| hessian = TRUE | とすることで, 数値微分による目的関数のヘシアンが求まる. これはサンプルサイズで割る前の観測情報量そのものである. 
+
+当てはめた幾何分布と, 実際のデータを並べてプロットしてみよう（図\ref{fitgeomreg}）.
+
+\begin{figure}
+\includegraphics[width=13cm,clip]{./img/fitgeomreg.pdf}
+\caption{当てはまりの確認. 棒グラフ: 観測値, 点: 推定値.}
+\label{fitgeomreg}
+\end{figure}
+
+係数 $\beta$ の推定値と, 観測情報量より計算した2標準誤差のエラーバーをプロットしてみよう（図\ref{coefgeomreg}）. 
+
+\begin{figure}
+\includegraphics[width=13cm,clip]{./img/coefgeomreg.pdf}
+\caption{係数のプロット. バーは2標準誤差.}
+\label{coefgeomreg}
+\end{figure}
+
+リピーターであるか否かが, サイトを回遊しやすいかどうかに大きく寄与する. 
+また, 25-34歳の男性がサイトを回遊しやすい傾向がわかる. 
+
+コードの全体は, R フォルダにある geomreg.R ファイルである. 
 
 \subsection{生存時間分析}
 幸か不幸か, R の survreg にはガンマ分布を使った回帰が実装されていないようなので, ここでは手作りでガンマ回帰を行う. 
