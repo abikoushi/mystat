@@ -212,7 +212,8 @@ $p(X|\theta)$ を $\theta$ の関数とみるときは尤度関数と呼ばれ�
 
 
 \subsection{間違ったモデルで最尤推定すること}
-上記ではサンプルを生成した分布と統計モデルが, パラメータのとり方によっては厳密に一致する場合を論じた. しかし, 現実にはサンプルを生成した分布は未知であり, 統計モデルは分析者が設定する. そのため, 統計モデルによって, サンプルを生成した分布が実現可能かどうかはわからない. 
+サンプルを生成した分布と統計モデルが, パラメータのとり方によっては厳密に一致するとき, サンプルを生成した分布が統計モデルによって実現可能であるという. 
+上記ではサンプルを生成した分布が統計モデルによって実現可能である場合を論じた. しかし, 現実にはサンプルを生成した分布は未知であり, 統計モデルは分析者が設定する. そのため, 統計モデルによって, サンプルを生成した分布が実現可能かどうかはわからない. 
 
 最尤推定は真の分布とモデルの間のカルバック・ライブラ情報量を経験的に最小化する方法であったことを思い出すと, 最尤法は「間違ったモデル」を選んでも, 選んだ範囲内で（カルバック・ライブラ情報量の意味で）適切な推定を行うことが予想される. 
 
@@ -234,33 +235,29 @@ g(x) = \frac{1}{6}x^3 exp(-x)
  
 （途中計算は省略して）
 
-$\hat \mu=4$,　$\hat \sigma^2=4$で, 真の分布とモデルの間のカルバック・ライブラ距離は最小となる. 
+$\hat \mu=4$,　$\hat \sigma^2=4$で, 真の分布とモデルの間のカルバック・ライブラ情報量は最小となる. 
 R を使って最尤推定のシミュレーションをしてみる.
-\begin{verbatim}
-MLEnorm_sim <- function(i,n){
-  x <- rgamma(n,4,1)
-  muhat <- mean(x)
-  n <- length(x)
-  s2hat <-  n*var(x)/(n-1)
-  c(muhat,s2hat)
-}
+その結果を図\ref{figWrongmodel} に示す.
 
-library(parallel)
-res10 <- t(simplify2array(mclapply(1:10000,MLEnorm_sim,n=10,
- mc.cores = detectCores())))
-res100 <- t(simplify2array(mclapply(1:10000,MLEnorm_sim,n=100,
- mc.cores = detectCores())))
-res1000 <- t(simplify2array(mclapply(1:10000,MLEnorm_sim,n=1000,
- mc.cores = detectCores())))
+\begin{figure}[htbp]
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=70mm]{img/wrongmodel_mu.pdf}
+  \end{center}
+ \end{minipage}
+ \begin{minipage}{0.5\hsize}
+  \begin{center}
+   \includegraphics[width=70mm]{img/wrongmodel_sigma2.pdf}
+  \end{center}
+ \end{minipage}
+   \caption{最尤推定量の分布を示すバイオリンプロット. $n$ はサンプルサイズ.}
+  \label{figWrongmodel}
+\end{figure}
 
-boxplot(cbind("n=10"=res10[,1],"n=100"=res100[,1],
- "n=1000"=res1000[,1]),main=expression(hat(mu)))
-abline(h=4,lty=2)
+図\ref{figWrongmodel} からは推定量が, カルバック・ライブラ情報量が最小となる点を中心に分布し, サンプルサイズが大きくなるに従って分散が小さくなる様子が伺える.
+しかし, この例にどれだけ一般性があるかはわからない.
 
-boxplot(cbind("n=10"=res10[,2],"n=100"=res100[,2],
- "n=1000"=res1000[,2]),main=expression(hat(sigma^2)))
-abline(h=4,lty=2)
-\end{verbatim}
+シミュレーションに用いたスクリプトは R フォルダにある wrogmodel.R である.
 
 \section{カイ二乗分布を使った検定}
 
@@ -622,6 +619,9 @@ optim は次のように使う.
 コードの全体は, R フォルダにある geomreg.R ファイルである. 
 
 \subsection{生存時間分析}
+
+生存時間分析とは死亡や機械の故障といったイベントの発生までの待ち時間を分析することを指す.
+
 幸か不幸か, R の survreg にはガンマ分布を使った回帰が実装されていないようなので, ここでは手作りでガンマ回帰を行う. 
 
 まず, 次の定理を紹介する. 
@@ -639,6 +639,8 @@ $\hat \theta$ が最尤推定量であるとき, 関数 $g(\theta)$ の最尤推
 
 \subsection{非定常ポアソン過程}
 時系列データというと, 等間隔の時点ごとに計測されたデータを思い浮かべることが多い. しかし, イベントの生起がランダムで, イベントの起こった時点だけが記録されていることもある. 
+
+\verb|DSolve[f'[t]==((m/eta^m)*t^(m-1))*(a-f[t]),f[t],t]|
 
 \begin{thebibliography}{4}
 \bibitem{Kuroki2017}黒木玄. (2017). 2017-06-04 LindebergのTaylor展開のみを使った中心極限定理の証明.pdf. \url{https://genkuroki.github.io/documents/mathtodon/}.
